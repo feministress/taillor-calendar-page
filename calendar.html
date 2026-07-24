@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taillors.com — Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#000000;
+    --paper:#FFFFFF;
+    --grey:#6B6B6B;
+    --line:#E4E4E4;
+    --line-soft:#EFEFEF;
+    --discord:#5865F2;
+    --discord-hover:#4752C4;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Space Grotesk',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:40px 24px 100px;}
+
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:28px;
+  }
+  .wordmark{
+    font-family:'Archivo Black',sans-serif;
+    font-size:11px;
+    letter-spacing:0.14em;
+  }
+  .back{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:12px;
+    color:var(--grey);
+    text-decoration:none;
+  }
+  .back:hover{color:var(--ink);}
+
+  h1.page-title{
+    font-family:'Archivo Black',sans-serif;
+    font-size:clamp(40px,9vw,84px);
+    line-height:0.95;
+    margin:0 0 24px;
+    letter-spacing:-0.01em;
+  }
+
+  .controls{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:16px;
+    margin-bottom:24px;
+  }
+  .month-nav{
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  .month-nav button{
+    width:34px;height:34px;
+    border:1px solid var(--ink);
+    background:var(--paper);
+    border-radius:50%;
+    cursor:pointer;
+    font-size:15px;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .15s ease, color .15s ease;
+  }
+  .month-nav button:hover{background:var(--ink);color:var(--paper);}
+  .month-nav h2{
+    font-family:'Playfair Display',serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:24px;
+    margin:0;
+    min-width:180px;
+    text-align:center;
+  }
+
+  .view-toggle{
+    display:flex;
+    gap:6px;
+  }
+  .view-toggle button{
+    font-family:'Archivo Black',sans-serif;
+    font-size:11px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    padding:9px 18px;
+    border-radius:999px;
+    border:1px solid var(--ink);
+    background:var(--paper);
+    color:var(--ink);
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .view-toggle button.active{background:var(--ink);color:var(--paper);}
+
+  /* ---- Academy toggle ---- */
+  .academy-toggle-wrap{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    position:relative;
+  }
+  .academy-toggle-label{
+    font-family:'Archivo Black',sans-serif;
+    font-size:10px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--grey);
+  }
+  .academy-switch{
+    width:38px;height:22px;
+    border-radius:999px;
+    background:var(--line);
+    border:1px solid var(--line);
+    cursor:pointer;
+    position:relative;
+    transition:background .15s ease, border-color .15s ease;
+    flex-shrink:0;
+  }
+  .academy-switch .dot{
+    position:absolute;
+    top:2px;left:2px;
+    width:16px;height:16px;
+    border-radius:50%;
+    background:var(--paper);
+    box-shadow:0 1px 3px rgba(0,0,0,0.25);
+    transition:transform .15s ease;
+  }
+  .academy-switch.on{
+    background:#2FBE5B;
+    border-color:#2FBE5B;
+  }
+  .academy-switch.on .dot{transform:translateX(16px);}
+  .academy-switch.shake{animation:shake .3s ease;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-4px);}
+    75%{transform:translateX(4px);}
+  }
+
+  .academy-popover{
+    position:absolute;
+    top:32px;right:0;
+    z-index:30;
+    background:var(--ink);
+    color:var(--paper);
+    border-radius:6px;
+    padding:14px;
+    width:200px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.3);
+    display:none;
+  }
+  .academy-popover.open{display:block;}
+  .academy-popover label{
+    font-size:10px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:#B5B5B5;
+    display:block;
+    margin-bottom:6px;
+  }
+  .academy-popover input{
+    width:100%;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:13px;
+    padding:8px 10px;
+    border-radius:3px;
+    border:1px solid #444;
+    background:#1a1a1a;
+    color:var(--paper);
+    margin-bottom:8px;
+    box-sizing:border-box;
+  }
+  .academy-popover button{
+    width:100%;
+    font-family:'Archivo Black',sans-serif;
+    font-size:10.5px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    background:var(--paper);
+    color:var(--ink);
+    border:none;
+    border-radius:3px;
+    padding:9px 0;
+    cursor:pointer;
+  }
+  .academy-popover .err{
+    font-size:11px;
+    color:#FF8A8A;
+    margin-top:6px;
+    display:none;
+  }
+  .academy-popover .err.show{display:block;}
+
+  /* ---- Calendar grid ---- */
+  .weekday-row{
+    display:grid;
+    grid-template-columns:repeat(7,minmax(0,1fr));
+    margin-bottom:4px;
+  }
+  .weekday-row div{
+    font-family:'Archivo Black',sans-serif;
+    font-size:10px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--grey);
+    text-align:center;
+    padding-bottom:8px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(7,minmax(0,1fr));
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+  .day-cell{
+    background:var(--paper);
+    min-height:108px;
+    min-width:0;
+    overflow:hidden;
+    padding:8px 6px;
+    position:relative;
+  }
+  .day-cell.pad{background:var(--line-soft);}
+  .day-num{
+    font-family:'Archivo Black',sans-serif;
+    font-size:13px;
+    margin-bottom:6px;
+  }
+  .day-cell.today .day-num{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:22px;height:22px;
+    background:var(--ink);
+    color:var(--paper);
+    border-radius:50%;
+  }
+  .chip{
+    display:block;
+    font-size:10.5px;
+    line-height:1.3;
+    padding:3px 5px;
+    margin-bottom:3px;
+    background:var(--ink);
+    color:var(--paper);
+    border-radius:2px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    cursor:pointer;
+  }
+  .chip:hover{background:var(--grey);}
+  .chip.academy{
+    background:var(--paper);
+    color:var(--ink);
+    border:1.5px solid var(--ink);
+  }
+  .chip.academy:hover{background:var(--ink);color:var(--paper);}
+  .chip.academy.online{
+    background:var(--discord);
+    color:var(--paper);
+    border:1.5px solid var(--discord);
+  }
+  .chip.academy.online:hover{background:var(--discord-hover);border-color:var(--discord-hover);}
+  .tag-academy{
+    display:inline-block;
+    font-family:'Archivo Black',sans-serif;
+    font-size:9px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid currentColor;
+    border-radius:2px;
+    padding:2px 6px;
+    margin-left:6px;
+    vertical-align:middle;
+  }
+  .tag-academy.online{
+    border-color:var(--discord);
+    color:var(--discord);
+  }
+  .chip-more{
+    font-size:10px;
+    color:var(--grey);
+    cursor:pointer;
+    padding:2px 5px;
+  }
+  .chip-more:hover{color:var(--ink);}
+
+  @media (max-width:640px){
+    .day-cell{min-height:74px;padding:4px;}
+    .chip{font-size:9px;padding:2px 3px;}
+    .day-num{font-size:11px;}
+  }
+
+  /* ---- Hover / click detail popover ---- */
+  .popover{
+    position:fixed;
+    z-index:50;
+    width:280px;
+    max-height:80vh;
+    overflow-y:auto;
+    background:var(--ink);
+    color:var(--paper);
+    border-radius:6px;
+    box-shadow:0 12px 40px rgba(0,0,0,0.35);
+    display:none;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  @media (max-width:640px){
+    .popover{
+      left:5% !important;
+      right:5%;
+      top:50% !important;
+      transform:translateY(-50%);
+      width:90%;
+      max-height:75vh;
+    }
+  }
+  .popover.open{display:block;}
+  .popover.academy-online a.cta{background:var(--discord);color:var(--paper);}
+  .popover img{
+    width:100%;
+    height:130px;
+    object-fit:cover;
+    display:block;
+  }
+  .popover-body{padding:14px 16px 16px;}
+  .popover-body h4{
+    font-family:'Playfair Display',serif;
+    font-size:16px;
+    margin:0 0 6px;
+    line-height:1.25;
+  }
+  .popover-meta{
+    font-size:11px;
+    color:#B5B5B5;
+    margin-bottom:8px;
+  }
+  .popover-desc{
+    font-size:12px;
+    color:#D8D8D8;
+    line-height:1.4;
+    margin-bottom:12px;
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .popover a.cta{
+    display:inline-block;
+    font-family:'Archivo Black',sans-serif;
+    font-size:10.5px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    background:var(--paper);
+    color:var(--ink);
+    padding:9px 16px;
+    border-radius:2px;
+    text-decoration:none;
+  }
+  .daylist-row{
+    display:block;
+    padding:10px 0;
+    border-bottom:1px solid #333;
+    text-decoration:none;
+    color:var(--paper);
+  }
+  .daylist-row:last-child{border-bottom:none;}
+  .daylist-row:hover{opacity:0.7;}
+  .daylist-row .dl-title{
+    font-family:'Playfair Display',serif;
+    font-size:14.5px;
+    margin-bottom:3px;
+  }
+  .daylist-row .dl-time{
+    font-size:11px;
+    color:#B5B5B5;
+  }
+  .popover-close{
+    position:absolute;
+    top:8px;right:10px;
+    color:var(--paper);
+    font-size:16px;
+    cursor:pointer;
+    z-index:2;
+  }
+  .backdrop{
+    position:fixed;inset:0;
+    z-index:40;
+    display:none;
+  }
+  .backdrop.open{display:block;}
+
+  /* ---- List view ---- */
+  .list-item{
+    display:grid;
+    grid-template-columns:88px 56px 1fr auto;
+    gap:16px;
+    align-items:center;
+    padding:16px 0;
+    border-bottom:1px solid var(--line);
+    text-decoration:none;
+    color:var(--ink);
+  }
+  .list-item:hover{background:var(--line-soft);}
+  .list-item img{
+    width:88px;height:56px;
+    object-fit:cover;
+    border-radius:4px;
+    background:var(--line-soft);
+  }
+  .list-date{text-align:center;}
+  .list-date .dow{font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:var(--grey);}
+  .list-date .dom{font-family:'Archivo Black',sans-serif;font-size:19px;line-height:1.1;}
+  .list-body h3{
+    font-family:'Playfair Display',serif;
+    font-size:17px;
+    font-weight:600;
+    margin:0 0 4px;
+    line-height:1.25;
+  }
+  .list-meta{font-size:11.5px;color:var(--grey);}
+  .list-cta{
+    font-family:'Archivo Black',sans-serif;
+    font-size:10px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    border:1px solid var(--ink);
+    padding:8px 14px;
+    border-radius:2px;
+    white-space:nowrap;
+  }
+  .list-item:hover .list-cta{background:var(--ink);color:var(--paper);}
+  .list-item.academy.online .list-cta{border-color:var(--discord);color:var(--discord);}
+  .list-item.academy.online:hover .list-cta{background:var(--discord);color:var(--paper);}
+  .month-label-list{
+    font-family:'Archivo Black',sans-serif;
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--grey);
+    margin:32px 0 10px;
+  }
+  .month-label-list:first-child{margin-top:0;}
+
+  @media (max-width:560px){
+    .list-item{grid-template-columns:60px 40px 1fr;}
+    .list-cta{grid-column:1/-1;justify-self:start;margin-left:76px;}
+    .list-item img{width:60px;height:40px;}
+  }
+
+  .state-msg{text-align:center;padding:80px 0;color:var(--grey);font-size:13px;}
+  #view-list{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="wordmark">TAILLORS.COM</div>
+    <a class="back" href="https://taillors.com">← Home</a>
+  </div>
+
+  <h1 class="page-title">Calendar</h1>
+
+  <div class="controls">
+    <div class="month-nav" id="monthNav">
+      <button onclick="changeMonth(-1)">‹</button>
+      <h2 id="monthLabel">—</h2>
+      <button onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="view-toggle">
+      <button class="active" data-view="calendar">Calendar</button>
+      <button data-view="list">List</button>
+    </div>
+    <div class="academy-toggle-wrap">
+      <span class="academy-toggle-label">Academy</span>
+      <div class="academy-switch" id="academySwitch" onclick="handleAcademyToggleClick(event)">
+        <div class="dot"></div>
+      </div>
+      <div class="academy-popover" id="academyPopover">
+        <label for="academyPasscode">Passcode</label>
+        <input type="password" id="academyPasscode" autocomplete="off" />
+        <button onclick="submitAcademyPasscode()">Unlock</button>
+        <div class="err" id="academyErr">Incorrect passcode</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-calendar">
+    <div class="weekday-row">
+      <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div id="view-list"></div>
+
+</div>
+
+<div class="backdrop" id="backdrop" onclick="closePopover()"></div>
+<div class="popover" id="popover">
+  <span class="popover-close" onclick="closePopover()">✕</span>
+  <img id="pop-img" src="" alt="" style="display:none;">
+  <div class="popover-body" id="pop-single">
+    <h4 id="pop-title"></h4>
+    <div class="popover-meta" id="pop-meta"></div>
+    <div class="popover-desc" id="pop-desc"></div>
+    <a class="cta" id="pop-cta" href="#" target="_blank" rel="noopener">Tickets</a>
+  </div>
+  <div class="popover-body" id="pop-daylist" style="display:none;">
+    <h4 id="daylist-title" style="margin-bottom:10px;"></h4>
+    <div id="daylist-items"></div>
+  </div>
+</div>
+
+<script>
+const PROXY_URL = 'https://taillor-events-proxy.vercel.app/api/events';
+const ACADEMY_PROXY_URL = 'https://taillor-events-proxy.vercel.app/api/academy-events';
+const HIDDEN_NAMES = ['Daily Service'];
+const ACADEMY_PASSCODE_HASH = '7cab150b317313414ee60ae8f2a06a12d59c7135d24c0e6d498482a84d91fad6';
+
+let allEvents = [];
+let viewMonth = new Date().getMonth();
+let viewYear = new Date().getFullYear();
+let currentView = 'calendar';
+let academyUnlocked = localStorage.getItem('academyUnlocked') === 'true';
+
+async function loadEvents(){
+  const results = await Promise.allSettled([
+    fetch(PROXY_URL).then(r => { if(!r.ok) throw new Error('Eventbrite proxy returned ' + r.status); return r.json(); }),
+    fetch(ACADEMY_PROXY_URL).then(r => { if(!r.ok) throw new Error('Academy proxy returned ' + r.status); return r.json(); })
+  ]);
+
+  const [ebResult, academyResult] = results;
+  let combined = [];
+  let errors = [];
+
+  if(ebResult.status === 'fulfilled'){
+    const data = ebResult.value;
+    combined = combined.concat(
+      (data.events || [])
+        .filter(ev => !HIDDEN_NAMES.includes(ev.name?.text))
+        .map(ev => ({
+          title: ev.name?.text || 'Untitled event',
+          start: ev.start?.local,
+          venue: ev.venue?.name || (ev.online_event ? 'Online' : ''),
+          url: ev.url,
+          description: ev.summary || '',
+          image: ev.logo?.url || ev.logo?.original?.url || null,
+          source: 'eventbrite'
+        }))
+    );
+  } else {
+    errors.push('Eventbrite: ' + ebResult.reason.message);
+  }
+
+  if(academyResult.status === 'fulfilled'){
+    const data = academyResult.value;
+    combined = combined.concat((data.events || []).map(ev => ({...ev, source: 'academy'})));
+  } else {
+    errors.push('Academy: ' + academyResult.reason.message);
+  }
+
+  allEvents = combined;
+
+  if(allEvents.length === 0 && errors.length){
+    document.getElementById('grid').innerHTML = `<div class="state-msg" style="grid-column:1/-1;">Couldn't load events (${errors.join('; ')}).</div>`;
+    return;
+  }
+  if(errors.length){
+    console.warn('Some event sources failed to load:', errors.join('; '));
+  }
+
+  renderCalendar();
+  renderList();
+}
+
+function academyTagHtml(e){
+  if(e.source !== 'academy') return '';
+  const cls = 'tag-academy' + (e.online ? ' online' : '');
+  return ` <span class="${cls}">Academy</span>`;
+}
+
+function eventsOnDate(y,m,d){
+  return allEvents.filter(e=>{
+    if(e.source === 'academy' && !academyUnlocked) return false;
+    const dt = new Date(e.start);
+    return dt.getFullYear()===y && dt.getMonth()===m && dt.getDate()===d;
+  }).sort((a,b)=>new Date(a.start)-new Date(b.start));
+}
+
+function dayCellHtml(y, m, d, isToday, isPad){
+  const evs = eventsOnDate(y, m, d);
+  let chipsHtml = '';
+  const maxShow = 2;
+  evs.slice(0,maxShow).forEach((e)=>{
+    const idx = allEvents.indexOf(e);
+    let chipClass = 'chip';
+    if(e.source === 'academy'){
+      chipClass += ' academy';
+      if(e.online) chipClass += ' online';
+    }
+    chipsHtml += `<span class="${chipClass}" onclick="openPopover(${idx}, event)">${e.title}</span>`;
+  });
+  if(evs.length > maxShow){
+    chipsHtml += `<span class="chip-more" onclick="showDayOverflow(${y},${m},${d}, event)">+${evs.length-maxShow} more</span>`;
+  }
+  const classes = ['day-cell'];
+  if(isPad) classes.push('pad');
+  if(isToday) classes.push('today');
+  return `<div class="${classes.join(' ')}"><div class="day-num">${d}</div>${chipsHtml}</div>`;
+}
+
+function renderCalendar(){
+  const grid = document.getElementById('grid');
+  const monthLabel = document.getElementById('monthLabel');
+  monthLabel.textContent = new Date(viewYear, viewMonth, 1).toLocaleDateString('en-US',{month:'long', year:'numeric'});
+
+  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+  const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
+
+  // previous/next month + year, accounting for wraparound
+  const prevMonth = viewMonth===0 ? 11 : viewMonth-1;
+  const prevYear = viewMonth===0 ? viewYear-1 : viewYear;
+  const nextMonth = viewMonth===11 ? 0 : viewMonth+1;
+  const nextYear = viewMonth===11 ? viewYear+1 : viewYear;
+
+  const today = new Date();
+  let html = '';
+
+  // leading padding (previous month) — now shows that month's events too
+  for(let i=firstDay-1;i>=0;i--){
+    const d = daysInPrevMonth-i;
+    const isToday = today.getFullYear()===prevYear && today.getMonth()===prevMonth && today.getDate()===d;
+    html += dayCellHtml(prevYear, prevMonth, d, isToday, true);
+  }
+
+  for(let d=1; d<=daysInMonth; d++){
+    const isToday = today.getFullYear()===viewYear && today.getMonth()===viewMonth && today.getDate()===d;
+    html += dayCellHtml(viewYear, viewMonth, d, isToday, false);
+  }
+
+  // trailing padding to complete final week — now shows next month's events too
+  const totalCells = firstDay + daysInMonth;
+  const remainder = totalCells % 7;
+  if(remainder !== 0){
+    for(let i=1; i<=7-remainder; i++){
+      const isToday = today.getFullYear()===nextYear && today.getMonth()===nextMonth && today.getDate()===i;
+      html += dayCellHtml(nextYear, nextMonth, i, isToday, true);
+    }
+  }
+
+  grid.innerHTML = html;
+}
+
+function showDayOverflow(y,m,d,evt){
+  evt.stopPropagation();
+  const evs = eventsOnDate(y,m,d);
+  const pop = document.getElementById('popover');
+  const img = document.getElementById('pop-img');
+  pop.classList.remove('academy');
+  pop.classList.remove('academy-online');
+
+  img.style.display = 'none';
+  document.getElementById('pop-single').style.display = 'none';
+  document.getElementById('pop-daylist').style.display = 'block';
+
+  const dateLabel = new Date(y,m,d).toLocaleDateString('en-US',{weekday:'long', month:'short', day:'numeric'});
+  document.getElementById('daylist-title').textContent = dateLabel;
+
+  let rows = '';
+  evs.forEach(e=>{
+    const dt = new Date(e.start);
+    const time = dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    rows += `<a class="daylist-row" href="${e.url}" target="_blank" rel="noopener">
+      <div class="dl-title">${e.title}${academyTagHtml(e)}</div>
+      <div class="dl-time">${time}${e.venue ? ' · ' + e.venue : ''}</div>
+    </a>`;
+  });
+  document.getElementById('daylist-items').innerHTML = rows;
+
+  positionPopover(evt);
+  pop.classList.add('open');
+  document.getElementById('backdrop').classList.add('open');
+}
+
+function changeMonth(delta){
+  const now = new Date();
+  const minMonth = new Date(now.getFullYear(), now.getMonth()-3, 1);
+  const maxMonth = new Date(now.getFullYear(), now.getMonth()+6, 1);
+
+  let newMonth = viewMonth + delta;
+  let newYear = viewYear;
+  if(newMonth > 11){ newMonth = 0; newYear++; }
+  if(newMonth < 0){ newMonth = 11; newYear--; }
+
+  const target = new Date(newYear, newMonth, 1);
+  if(target < minMonth || target > maxMonth) return; // stay within allowed range
+
+  viewMonth = newMonth;
+  viewYear = newYear;
+  renderCalendar();
+}
+
+function openPopover(idx, evt){
+  evt.stopPropagation();
+  const e = allEvents[idx];
+  if(!e) return;
+  const pop = document.getElementById('popover');
+  const img = document.getElementById('pop-img');
+  pop.classList.toggle('academy', e.source === 'academy');
+  pop.classList.toggle('academy-online', e.source === 'academy' && !!e.online);
+
+  document.getElementById('pop-daylist').style.display = 'none';
+  document.getElementById('pop-single').style.display = 'block';
+
+  if(e.image){ img.src = e.image; img.style.display='block'; } else { img.style.display='none'; }
+  document.getElementById('pop-title').innerHTML = e.title + academyTagHtml(e);
+  const d = new Date(e.start);
+  const dateStr = d.toLocaleDateString('en-US',{weekday:'short', month:'short', day:'numeric'});
+  const timeStr = d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  document.getElementById('pop-meta').textContent = `${dateStr} · ${timeStr}${e.venue ? ' · ' + e.venue : ''}`;
+  document.getElementById('pop-desc').textContent = e.description || '';
+  document.getElementById('pop-cta').href = e.url;
+  document.getElementById('pop-cta').textContent = e.source === 'academy' ? 'RSVP on Discord' : 'Tickets';
+
+  positionPopover(evt);
+  pop.classList.add('open');
+  document.getElementById('backdrop').classList.add('open');
+}
+
+function positionPopover(evt){
+  const pop = document.getElementById('popover');
+  const x = Math.min(evt.clientX + 12, window.innerWidth - 300);
+  const y = Math.min(evt.clientY + 12, window.innerHeight - 340);
+  pop.style.left = Math.max(12,x) + 'px';
+  pop.style.top = Math.max(12,y) + 'px';
+}
+function closePopover(){
+  document.getElementById('popover').classList.remove('open');
+  document.getElementById('backdrop').classList.remove('open');
+}
+
+function renderList(){
+  const root = document.getElementById('view-list');
+  const now = new Date();
+  const upcoming = allEvents
+    .filter(e => e.source !== 'academy' || academyUnlocked)
+    .filter(e=>new Date(e.start) >= new Date(now.toDateString()))
+    .sort((a,b)=>new Date(a.start)-new Date(b.start));
+
+  if(upcoming.length===0){
+    root.innerHTML = '<div class="state-msg">No upcoming events found.</div>';
+    return;
+  }
+
+  let html='';
+  let lastMonth='';
+  upcoming.forEach(e=>{
+    const d = new Date(e.start);
+    const monthLabel = d.toLocaleDateString('en-US',{month:'long', year:'numeric'});
+    if(monthLabel!==lastMonth){
+      html += `<div class="month-label-list">${monthLabel}</div>`;
+      lastMonth = monthLabel;
+    }
+    const dow = d.toLocaleDateString('en-US',{weekday:'short'});
+    const dom = d.getDate();
+    const time = d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    const imgTag = e.image ? `<img src="${e.image}" alt="">` : `<div style="width:88px;height:56px;background:var(--line-soft);border-radius:4px;"></div>`;
+
+    const itemClass = 'list-item' + (e.source === 'academy' ? ' academy' + (e.online ? ' online' : '') : '');
+    html += `
+      <a class="${itemClass}" href="${e.url}" target="_blank" rel="noopener">
+        ${imgTag}
+        <div class="list-date"><div class="dow">${dow}</div><div class="dom">${dom}</div></div>
+        <div class="list-body">
+          <h3>${e.title}${academyTagHtml(e)}</h3>
+          <div class="list-meta">${time}${e.venue ? ' · ' + e.venue : ''}</div>
+        </div>
+        <div class="list-cta">${e.source === 'academy' ? 'RSVP on Discord' : 'Tickets'}</div>
+      </a>`;
+  });
+  root.innerHTML = html;
+}
+
+document.querySelectorAll('.view-toggle button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.view-toggle button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentView = btn.dataset.view;
+    document.getElementById('view-calendar').style.display = currentView==='calendar' ? 'block':'none';
+    document.getElementById('view-list').style.display = currentView==='list' ? 'block':'none';
+    document.getElementById('monthNav').style.visibility = currentView==='calendar' ? 'visible':'hidden';
+  });
+});
+
+async function sha256Hex(text){
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function syncAcademySwitch(){
+  document.getElementById('academySwitch').classList.toggle('on', academyUnlocked);
+}
+
+function handleAcademyToggleClick(evt){
+  evt.stopPropagation();
+  const popover = document.getElementById('academyPopover');
+  if(academyUnlocked){
+    // toggling off requires no passcode
+    academyUnlocked = false;
+    localStorage.setItem('academyUnlocked', 'false');
+    syncAcademySwitch();
+    renderCalendar();
+    renderList();
+    popover.classList.remove('open');
+    return;
+  }
+  popover.classList.toggle('open');
+  if(popover.classList.contains('open')){
+    document.getElementById('academyPasscode').focus();
+  }
+}
+
+async function submitAcademyPasscode(){
+  const input = document.getElementById('academyPasscode');
+  const err = document.getElementById('academyErr');
+  const enteredHash = await sha256Hex(input.value);
+  if(enteredHash === ACADEMY_PASSCODE_HASH){
+    academyUnlocked = true;
+    localStorage.setItem('academyUnlocked', 'true');
+    syncAcademySwitch();
+    renderCalendar();
+    renderList();
+    document.getElementById('academyPopover').classList.remove('open');
+    err.classList.remove('show');
+    input.value = '';
+  } else {
+    err.classList.add('show');
+    const sw = document.getElementById('academySwitch');
+    sw.classList.add('shake');
+    setTimeout(()=>sw.classList.remove('shake'), 300);
+  }
+}
+
+document.getElementById('academyPasscode').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') submitAcademyPasscode();
+});
+
+document.addEventListener('click', (e)=>{
+  const wrap = document.querySelector('.academy-toggle-wrap');
+  if(wrap && !wrap.contains(e.target)){
+    document.getElementById('academyPopover').classList.remove('open');
+  }
+});
+
+syncAcademySwitch();
+loadEvents();
+</script>
+</body>
+</html>
